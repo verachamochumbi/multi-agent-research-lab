@@ -8,7 +8,7 @@ from huggingface_hub import InferenceClient
 HF_TOKEN = os.getenv("HF_TOKEN", None)
 
 # Modelo elegido (puedes cambiarlo luego si quieres)
-MODEL_NAME = "HuggingFaceH4/zephyr-7b-beta"
+MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
 
 # Creamos el cliente de inferencia
 client = InferenceClient(model=MODEL_NAME, token=HF_TOKEN)
