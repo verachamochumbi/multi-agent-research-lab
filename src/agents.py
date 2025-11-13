@@ -3,6 +3,7 @@
 # Más adelante los convertiremos en agentes "de verdad" con CrewAI y Hugging Face.
 
 from .tools import buscar_en_web
+from .hf_client import generar_resumen_markdown
 
 
 class Investigador:
@@ -22,16 +23,11 @@ class Escritor:
         self.nombre = "Agente Escritor"
 
     def actuar(self, texto_fuente):
-        """Crea un mini-resumen de prueba (sin IA todavía)."""
-        print(f"[{self.nombre}] Escribiendo un borrador de resumen...")
-        # De momento, solo devolvemos las primeras líneas como "borrador"
-        borrador = (
-            "# Resumen preliminar\n\n"
-            "Este es un borrador muy simple basado en la información encontrada.\n\n"
-            "Fragmento usado:\n\n"
-            f"{texto_fuente[:500]}\n"
-        )
-        return borrador
+        """Genera un resumen usando la API de Hugging Face."""
+        print(f"[{self.nombre}] Generando resumen con Hugging Face...")
+        resumen = generar_resumen_markdown(texto_fuente)
+        return resumen
+
 
 
 class Revisor:
