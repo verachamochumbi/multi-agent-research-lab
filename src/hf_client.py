@@ -39,9 +39,20 @@ def generar_resumen_markdown(texto_fuente: str) -> str:
             {"role": "system", "content": system_message},
             {"role": "user", "content": user_message},
         ],
-        max_tokens=700,
+        max_tokens=1000,
         temperature=0.4,
     )
+
+    system_message = (
+    "Eres un asistente de investigación en IA. "
+    "Genera un informe claro en español, en formato Markdown (~500 palabras), "
+    "y es OBLIGATORIO que incluyas exactamente estas cuatro secciones, "
+    "en este orden y con estos títulos:\n\n"
+    "# Introducción\n"
+    "## Hallazgos clave\n"
+    "## Desafíos éticos y técnicos\n"
+    "## Conclusión\n"
+)
 
     # La respuesta viene en completion.choices[0].message["content"]
     return completion.choices[0].message["content"]
