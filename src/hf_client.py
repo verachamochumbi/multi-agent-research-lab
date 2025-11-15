@@ -1,57 +1,78 @@
 # hf_client.py
-# Cliente para interactuar con la API de Hugging Face usando modo "chat".
+# Versión simple: usamos directamente la Inference API de Hugging Face con requests.
 
 import os
-from huggingface_hub import InferenceClient
+import requests
 
-# Tomamos el token desde las variables de entorno (lo pones en Colab)
+# Token de Hugging Face (lo pones en Colab en os.environ["HF_TOKEN"])
 HF_TOKEN = os.getenv("HF_TOKEN", None)
 
-# Creamos un cliente genérico (sin fijar tarea)
-client = InferenceClient(token=HF_TOKEN)
+# Modelo de texto que SÍ soporta text-generation en la Inference API
+MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
+API_URL = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
 
-MODEL_NAME = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+HEADERS = {
+    "Authorization": f"Bearer {HF_TOKEN}"
+}
+
 
 def generar_resumen_markdown(texto_fuente: str) -> str:
     """
-    Usa un modelo de chat de Hugging Face para generar un informe en Markdown (~500 palabras),
-    con la estructura:
-    - Introducción
-    - Hallazgos clave
-    - Desafíos éticos y técnicos
-    - Conclusión
+    Llama directamente a la API de Hugging Face para generar
+    un informe en Markdown (~500 palabras) con esta estructura:
+
+    # Introducción
+    ## Hallazgos clave
+    ## Desafíos éticos y técnicos
+    ## Conclusión
     """
+
+    if HF_TOKEN is None:
+        return "Error: no se encontró HF_TOKEN en las variables de entorno."
 
     texto_recortado = texto_fuente[:2000]
 
-    system_message = (
-        "Eres un asistente de investigación en IA. "
-        "Genera un informe claro en español, en formato Markdown (~500 palabras), "
-        "con las secciones: Introducción, Hallazgos clave, Desafíos éticos y técnicos, Conclusión."
-    )
+    prompt = f"""
+Eres un asistente de investigación en IA.
 
-    user_message = f"Estas son las notas y fragmentos sobre el tema:\n\"\"\"{texto_recortado}\"\"\""
+A partir de las siguientes notas sobre el impacto de los datos sintéticos en la atención médica,
+escribe un informe en ESPAÑOL de alrededor de 500 palabras, en FORMATO MARKDOWN, usando EXACTAMENTE
+estas secciones y títulos:
 
-    completion = client.chat_completion(
-        model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": user_message},
-        ],
-        max_tokens=1000,
-        temperature=0.4,
-    )
+# Introducción
 
-    system_message = (
-    "Eres un asistente de investigación en IA. "
-    "Genera un informe claro en español, en formato Markdown (~500 palabras), "
-    "y es OBLIGATORIO que incluyas exactamente estas cuatro secciones, "
-    "en este orden y con estos títulos:\n\n"
-    "# Introducción\n"
-    "## Hallazgos clave\n"
-    "## Desafíos éticos y técnicos\n"
-    "## Conclusión\n"
-)
+## Hallazgos clave
 
-    # La respuesta viene en completion.choices[0].message["content"]
-    return completion.choices[0].message["content"]
+## Desafíos éticos y técnicos
+
+## Conclusión
+
+No añadas otras secciones adicionales. Usa un tono claro y académico.
+
+Notas de referencia:
+\"\"\"{texto_recortado}\"\"\"
+"""
+
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 700,
+            "temperature": 0.4,
+        }
+    }
+
+    response = requests.post(API_URL, headers=HEADERS, json=payload)
+    try:
+        response.raise_for_status()
+    except Exception as e:
+        return f"Error al llamar a la API de Hugging Face: {e}\nRespuesta: {response.text}"
+
+    data = response.json()
+
+    # Formato típico de la Inference API para text-generation:
+    # [ { "generated_text": "..." } ]
+    if isinstance(data, list) and len(data) > 0 and "generated_text" in data[0]:
+        return data[0]["generated_text"]
+
+    # Si la respuesta tiene otro formato, la devolvemos como texto.
+    return str(data)
