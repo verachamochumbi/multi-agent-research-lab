@@ -10,8 +10,7 @@ HF_TOKEN = os.getenv("HF_TOKEN", None)
 # Creamos un cliente genérico (sin fijar tarea)
 client = InferenceClient(token=HF_TOKEN)
 
-MODEL_NAME = "HuggingFaceH4/zephyr-7b-beta"
-# Este modelo está pensado para uso conversacional, así que usamos chat_completion.
+MODEL_NAME = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 def generar_resumen_markdown(texto_fuente: str) -> str:
     """
