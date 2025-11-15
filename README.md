@@ -1,99 +1,95 @@
 **🧠 Multi-Agent Research Lab**
 
-_Laboratorio de Investigación en IA con Agentes Colaborativos_
+_**Simulación de investigación colaborativa con CrewAI + Hugging Face**_
 
-- Este repositorio contiene mi implementación del Ejercicio 1 del laboratorio “Colaboración Multiagente + Razonamiento RAG”.
-- El objetivo es simular un pequeño laboratorio virtual de IA, donde varios agentes autónomos trabajan juntos para producir un informe de investigación.
+Este proyecto implementa un flujo de trabajo de colaboración multiagente, donde tres agentes autónomos (Investigador, Redactor y Revisor) trabajan juntos para producir un informe de investigación sobre un tema relacionado con la Inteligencia Artificial.
 
-**🎯 Objetivo del laboratorio**
+El sistema combina:
 
-Crear un flujo de trabajo multiagente donde:
-- Un Agente Investigador busca información en la web.
-- Un Agente Escritor genera un resumen estructurado en Markdown.
-- Un Agente Revisor evalúa la coherencia del texto y agrega comentarios.
+- CrewAI → coordinación y ejecución del equipo de agentes
+- DuckDuckGo Search → recuperación de información
+- Hugging Face Inference API → generación de texto y resúmenes
+- Python 3.10+
+- Estructura modular en src/
 
-Finalmente, el sistema produce un archivo:
-research_summary.md
-con la estructura requerida:
-- Introducción
-- Hallazgos clave
-- Desafíos éticos y técnicos
-- Conclusión
+El objetivo es simular un laboratorio virtual de investigación, donde cada agente cumple un rol específico y se comunica con el resto para completar una tarea común.
 
 **🏗️ Estructura del repositorio**
 
 multi-agent-research-lab/
 │
 ├── src/
-│   ├── agents.py        → Lógica del Investigador, Escritor y Revisor
-│   ├── tools.py         → Búsqueda web (DuckDuckGo Search)
-│   ├── hf_client.py     → Cliente para generar el resumen (versión local)
-│
-├── data/                → (Carpeta reservada para datos si se requieren)
+│   ├── agents.py             # Definición de los agentes (Investigador, Redactor, Revisor)
+│   ├── tools.py              # Herramienta de búsqueda web
+│   ├── hf_client.py          # Cliente para Hugging Face Inference API
+│   ├── crewai_workflow.py    # Flujo de trabajo multiagente con CrewAI
+│   └── __init__.py           # Permite importar el paquete 'src'
 │
 ├── notebooks/
-│   ├── workflow_demo.ipynb   → Notebook demostrando la ejecución completa
+│   └── workflow_demo.ipynb   # Notebook de demostración en Google Colab
 │
-├── research_summary.md  → Informe final generado por el sistema
-├── requirements.txt     → Dependencias del proyecto
-└── README.md            → Este archivo
+├── data/                     # Carpeta opcional para almacenar textos o resultados
+│
+├── research_summary.md        # Resumen final generado por los agentes
+│
+└── README.md                 # Este archivo
+
+**🧩 Descripción del flujo multiagente**
+
+**🟦 1. Agente Investigador**
+- Realiza búsquedas en la web usando DuckDuckGo
+- Recupera fragmentos de texto relevantes
+- Produce material de entrada para el redactor
+
+**🟩 2. Agente Redactor**
+- Utiliza Hugging Face Inference API
+- Resume, limpia y estructura la información
+- Produce un borrador del informe en formato Markdown
+
+**🟨 3. Agente Revisor**
+- Evalúa coherencia, claridad y factualidad
+- Agrega sugerencias de mejora
+- Devuelve retroalimentación al redactor
+
+**🟥 4. CrewAI coordina la conversación**
+- Los agentes se comunican entre sí mediante:
+- Asignación de tareas
+- Paso de información
+- Ejecución secuenciada
+
+El resultado final se almacena automáticamente como:
+
+📄 research_summary.md
 
 
-**🧩 Descripción de los agentes**
+**📘 Tecnologías utilizadas**
+| Tecnología                     | Uso                              |
+| ------------------------------ | -------------------------------- |
+| **CrewAI**                     | Coordinación multiagente         |
+| **Hugging Face Inference API** | Generación de resúmenes y textos |
+| **DuckDuckGo Search**          | Recuperación de información      |
+| **Python 3.10+**               | Lenguaje principal               |
+| **Google Colab**               | Entorno de ejecución             |
 
-**🔍 Agente Investigador**
-- Recibe un tema de investigación.
-- Ejecuta una búsqueda web usando DuckDuckGo Search.
-- Devuelve fragmentos de texto o mensajes relevantes.
+**🎯 Criterios de evaluación y cumplimiento**
+| Criterio                                         | Cumplimiento |
+| ------------------------------------------------ | ------------ |
+| ✔ Configuración correcta (CrewAI + Hugging Face) | ✓            |
+| ✔ Colaboración multiagente funcional             | ✓            |
+| ✔ Agente Investigador recupera texto             | ✓            |
+| ✔ Agente Redactor resume contenido               | ✓            |
+| ✔ Agente Revisor analiza coherencia              | ✓            |
+| ✔ Archivo final Markdown bien estructurado       | ✓            |
 
+**📄 Resultado final**
 
-**✍️ Agente Escritor**
-- Toma la información recopilada por el Investigador.
-- Genera un informe en formato Markdown, siguiendo la estructura del laboratorio.
-- Debido a cambios recientes en la API Inference de Hugging Face, este repositorio incluye una versión local de generación de resumen (sin depender de una API externa), manteniendo el flujo funcional.
+El sistema genera automáticamente:
 
+📁 research_summary.md
+que contiene:
+- Introducción
+- Hallazgos clave
+- Desafíos éticos y técnicos
+- Conclusión
 
-**✔️ Agente Revisor**
-- Lee el borrador generado por el Escritor.
-- Añade un comentario evaluando claridad y coherencia.
-
-
-**🔁 Flujo de trabajo**
-1. El usuario ejecuta el flujo con un tema, por ejemplo:
-ejecutar_flujo_simple("Impacto de los datos sintéticos en la atención médica")
-2. El Investigador busca información en línea.
-3. El Escritor usa esa información para generar un informe.
-4. El Revisor analiza el texto y produce un comentario.
-5. El sistema devuelve el Markdown final.
-6. Ese texto se guarda como research_summary.md.
-
-**📓 Notebook de demostración**
-
-El archivo:
-_notebooks/workflow_demo.ipynb_
-
-muestra paso a paso:
-- Importación de dependencias
-- Ejecución del flujo multiagente
-- Resultado final del informe
-- Guardado del archivo Markdown
-- Está pensado para ser corrido en Google Colab.
-
-**📄 Archivo final generado**
-
-El resultado de todo el flujo se encuentra en:
-_research_summary.md_
-Este archivo contiene el informe estructurado con todos los apartados requeridos.
-
-**⚙️ Requerimientos**
-
-El entorno puede configurarse instalando las dependencias desde:
-requirements.txt
-
-**📝 Notas técnicas**
-- Este proyecto está diseñado de forma modular para facilitar ser extendido a versiones más avanzadas con CrewAI o integración real con la Hugging Face Inference API.
-- Debido a cambios recientes en los endpoints oficiales de HuggingFace, el cliente incluído (hf_client.py) funciona en modo local para mantener la ejecución estable en Google Colab.
-
-**🎓 Conclusión**
-- Este laboratorio demuestra cómo varios agentes especializados pueden colaborar para resolver una tarea de investigación automatizada.
-- El flujo funciona de inicio a fin y produce un informe estructurado listo para ser evaluado.
+Todo generado, revisado y sintetizado por el equipo multiagente.
