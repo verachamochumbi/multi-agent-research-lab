@@ -97,7 +97,7 @@ def crear_crew(tema: str) -> Crew:
         agents=[investigador_agent, redactor_agent, revisor_agent],
         tasks=[tarea_investigacion, tarea_redaccion, tarea_revision],
         process=Process.sequential,
-        verbose=2,
+        verbose=True,
     )
 
     return crew
