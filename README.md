@@ -14,26 +14,11 @@ El sistema combina:
 
 El objetivo es simular un laboratorio virtual de investigación, donde cada agente cumple un rol específico y se comunica con el resto para completar una tarea común.
 
-**🏗️ Estructura del repositorio**
+**Integrantes**
+- Vera Chamochumbi
+- Fabrizio Sulca
 
-multi-agent-research-lab/
-│
-├── src/
-│   ├── agents.py             # Definición de los agentes (Investigador, Redactor, Revisor)
-│   ├── tools.py              # Herramienta de búsqueda web
-│   ├── hf_client.py          # Cliente para Hugging Face Inference API
-│   ├── crewai_workflow.py    # Flujo de trabajo multiagente con CrewAI
-│   └── __init__.py           # Permite importar el paquete 'src'
-│
-├── notebooks/
-│   └── workflow_demo.ipynb   # Notebook de demostración en Google Colab
-│
-├── data/                     # Carpeta opcional para almacenar textos o resultados
-│
-├── research_summary.md        # Resumen final generado por los agentes
-│
-└── README.md                 # Este archivo
-
+  
 **🧩 Descripción del flujo multiagente**
 
 **🟦 1. Agente Investigador**
