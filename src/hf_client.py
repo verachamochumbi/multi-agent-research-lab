@@ -1,30 +1,33 @@
 # hf_client.py
-# Versión simple: usamos directamente la Inference API de Hugging Face con requests.
+# Cliente sencillo para la nueva API de Hugging Face (router.huggingface.co)
+# usando el endpoint de chat completions compatible con OpenAI.
 
 import os
 import requests
 
-# Token de Hugging Face (lo pones en Colab en os.environ["HF_TOKEN"])
 HF_TOKEN = os.getenv("HF_TOKEN", None)
 
-# Modelo de texto que SÍ soporta text-generation en la Inference API
-MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
-API_URL = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
+# Modelo: usa uno que sea de lenguaje general y esté disponible en HF Inference.
+# Puedes cambiarlo por otro si lo deseas.
+MODEL_PROVIDER = "deepseek-ai"
+MODEL_ID = "DeepSeek-R1-Distill-Qwen-32B"
 
-HEADERS = {
-    "Authorization": f"Bearer {HF_TOKEN}"
-}
+# URL según la documentación del router de Hugging Face:
+# https://router.huggingface.co/hf-inference/models/:provider/:model_id/v1/chat/completions :contentReference[oaicite:1]{index=1}
+API_URL = (
+    f"https://router.huggingface.co/hf-inference/models/"
+    f"{MODEL_PROVIDER}/{MODEL_ID}/v1/chat/completions"
+)
 
 
 def generar_resumen_markdown(texto_fuente: str) -> str:
     """
-    Llama directamente a la API de Hugging Face para generar
-    un informe en Markdown (~500 palabras) con esta estructura:
-
-    # Introducción
-    ## Hallazgos clave
-    ## Desafíos éticos y técnicos
-    ## Conclusión
+    Llama al router de Hugging Face para generar un informe en Markdown (~500 palabras)
+    con las secciones:
+      - Introducción
+      - Hallazgos clave
+      - Desafíos éticos y técnicos
+      - Conclusión
     """
 
     if HF_TOKEN is None:
@@ -32,47 +35,47 @@ def generar_resumen_markdown(texto_fuente: str) -> str:
 
     texto_recortado = texto_fuente[:2000]
 
-    prompt = f"""
-Eres un asistente de investigación en IA.
+    system_message = (
+        "Eres un asistente de investigación en IA. "
+        "Genera un informe claro en ESPAÑOL, en formato Markdown (~500 palabras), "
+        "usando EXACTAMENTE estas secciones y títulos en este orden:\n\n"
+        "# Introducción\n"
+        "## Hallazgos clave\n"
+        "## Desafíos éticos y técnicos\n"
+        "## Conclusión\n\n"
+        "No añadas secciones extra y no cambies los títulos."
+    )
 
-A partir de las siguientes notas sobre el impacto de los datos sintéticos en la atención médica,
-escribe un informe en ESPAÑOL de alrededor de 500 palabras, en FORMATO MARKDOWN, usando EXACTAMENTE
-estas secciones y títulos:
+    user_message = (
+        "Estas son notas y fragmentos recuperados de la web sobre el tema. "
+        "Úsalas como referencia para escribir el informe final:\n\n"
+        f"\"\"\"{texto_recortado}\"\"\""
+    )
 
-# Introducción
-
-## Hallazgos clave
-
-## Desafíos éticos y técnicos
-
-## Conclusión
-
-No añadas otras secciones adicionales. Usa un tono claro y académico.
-
-Notas de referencia:
-\"\"\"{texto_recortado}\"\"\"
-"""
-
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 700,
-            "temperature": 0.4,
-        }
+    headers = {
+        "Authorization": f"Bearer {HF_TOKEN}",
+        "Content-Type": "application/json",
     }
 
-    response = requests.post(API_URL, headers=HEADERS, json=payload)
-    try:
-        response.raise_for_status()
-    except Exception as e:
-        return f"Error al llamar a la API de Hugging Face: {e}\nRespuesta: {response.text}"
+    payload = {
+        "messages": [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message},
+        ],
+        "max_tokens": 700,
+        "stream": False,
+    }
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+
+    if not response.ok:
+        return f"Error al llamar a la API de Hugging Face: {response.status_code} - {response.text}"
 
     data = response.json()
 
-    # Formato típico de la Inference API para text-generation:
-    # [ { "generated_text": "..." } ]
-    if isinstance(data, list) and len(data) > 0 and "generated_text" in data[0]:
-        return data[0]["generated_text"]
-
-    # Si la respuesta tiene otro formato, la devolvemos como texto.
-    return str(data)
+    # Formato OpenAI-like:
+    # { "choices": [ { "message": { "role": "assistant", "content": "..." } } ] }
+    try:
+        return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"Error al interpretar la respuesta de HF: {e}\nRespuesta completa: {data}"
